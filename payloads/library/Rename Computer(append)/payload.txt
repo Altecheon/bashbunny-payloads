@@ -1,0 +1,60 @@
+#!/bin/bash
+#
+# Title:         Rename Computer(append)
+# Author:        Altecheon
+# Version:       1.0
+# Target:        Windows 7+
+# Dependencies:  The following files must exist in the switch folder:
+#                user.txt - The username for the rename (domain\user) if not domain the computers domain is assumed
+#                password.txt - The password to the user for the name change
+#                append.txt - Appends the name to the computer
+# 
+# Description:   adds text to computer name and renames it
+#
+# Colors:
+# Green.....................Working
+# White.....................Completed without error
+# White (blinking)..........Incrementing the port in listener_port.txt
+# Blue (blinking)...........append.txt was not found
+# Light-Blue (blinking).....user.txt was not found
+# Amber (blinking)..........password.txt was not found
+
+LED G
+ATTACKMODE HID STORAGE
+
+LANGUAGE='us'
+
+# Get the switch position
+source bunny_helpers.sh
+
+# Check for all the files - error if not found. If found, put into variables
+
+if [ ! -f "/root/udisk/payloads/${SWITCH_POSITION}/append.txt" ] ; then
+    LED B 100
+    exit 1
+else
+    append=`cat /root/udisk/payloads/${SWITCH_POSITION}/append.txt`
+fi
+
+if [ ! -f "/root/udisk/payloads/${SWITCH_POSITION}/user.txt" ] ; then
+    LED B G 100
+    exit 1
+else
+    user=`cat /root/udisk/payloads/${SWITCH_POSITION}/user.txt`
+fi
+if [ ! -f "/root/udisk/payloads/${SWITCH_POSITION}/password.txt" ] ; then
+    LED R G 100
+    exit 1
+else
+    pass=`cat /root/udisk/payloads/${SWITCH_POSITION}/password.txt`
+fi
+
+# Execute the powershell command in the run box with the appropriate variables
+QUACK GUI r
+QUACK DELAY 200
+QUACK STRING powershell  ".((gwmi win32_volume -f 'label=''BashBunny''').Name+'payloads\\${SWITCH_POSITION}\\test.bat') ${append} ${user} ${pass}"
+QUACK ENTER
+
+# Signal everything went OK - white
+LED R G B
+exit 0
